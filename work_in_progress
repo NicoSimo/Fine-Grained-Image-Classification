@@ -1,0 +1,6 @@
+-Created CNN_FGVC.ipynb, a model built on the FGVC dataset.
+    - It uses a CNN built from "scratch" 
+
+  ---> first problem, images of different size. 
+  - Created 'Cropper.py' 'Library'. It contains two functions. The first one is designed to take a dataset (folder) of images in input and return the average size (height and width),
+    while the second one takes the same dataset, the avg sizes and returns the dataset resized to the proper size.
