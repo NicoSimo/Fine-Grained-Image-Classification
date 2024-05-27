@@ -1,12 +1,6 @@
 import os
 from PIL import Image
-from torch.utils.data import Dataset
-import pandas as pd
-import torch
-from skimage import io
-import numpy as np
-import torchvision.transforms as transforms
-
+from collections import Counter
 
 def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_height) -> None:
     '''
@@ -18,7 +12,7 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
     target height = Input the target height of the image
     '''
     os.makedirs(output_dir, exist_ok=True)
-    for root, dirs, files in os.walk(dataset_dir):
+    for root, _, files in os.walk(dataset_dir):
         for file in files:
             if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
 
@@ -59,12 +53,15 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
 
                 padded_img.save(output_path)
 
-def images_sizes(dataset_dir: str):
+def mean_images_sizes(dataset_dir: str):
+    '''
+    Function that takes the dataset directory as input and returns the average height and width of the images in the dataset.
+    '''
     total_height = 0
     total_width = 0
     num_images = 0
 
-    for root, dirs, files in os.walk(dataset_dir):
+    for root, _, files in os.walk(dataset_dir):
         for file in files:
             if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
                 img_path = os.path.join(root, file)
@@ -82,10 +79,40 @@ def images_sizes(dataset_dir: str):
         print("No image files found in the directory.")
         return 0, 0
 
-    print(f'Total Height: {total_height}')
-    print(f'Total Width: {total_width}')
-
     average_height = total_height / num_images
     average_width = total_width / num_images
 
+    #print(f'Average Height: {average_height} -------- Average Width: {average_width}')
+
     return average_height, average_width
+
+def mode_images_mode_sizes(dataset_dir: str):
+    '''
+    Function that takes the dataset directory as input and returns the mode height and width of the images in the dataset.
+    '''
+    heights = []
+    widths = []
+
+    for root, _, files in os.walk(dataset_dir):
+        for file in files:
+            if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
+                img_path = os.path.join(root, file)
+                try:
+                    img = Image.open(img_path)
+                    width, height = img.size
+                    heights.append(height)
+                    widths.append(width)
+                except Exception as e:
+                    print(f"Error processing image '{img_path}': {e}")
+
+    if not heights or not widths:
+        print("No image files found in the directory.")
+        return 0, 0
+
+    mode_height = Counter(heights).most_common(1)[0][0]
+    mode_width = Counter(widths).most_common(1)[0][0]
+
+    #print(f'Mode Height: {mode_height} -------- Mode Width: {mode_width}')
+    #print(Counter(widths))
+
+    return mode_height, mode_width
