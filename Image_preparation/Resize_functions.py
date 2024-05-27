@@ -1,7 +1,14 @@
 import os
 from PIL import Image
+from torch.utils.data import Dataset
+import pandas as pd
+import torch
+from skimage import io
+import numpy as np
+import torchvision.transforms as transforms
 
-def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_height):
+
+def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_height) -> None:
     '''
     Function to resize all images in the dataset_dir while preserving aspect ratio and adding padding to fit the target dimensions.
     
@@ -10,15 +17,15 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
     target width = Input the target width of the image
     target height = Input the target height of the image
     '''
-
     os.makedirs(output_dir, exist_ok=True)
     for root, dirs, files in os.walk(dataset_dir):
         for file in files:
             if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
+
                 img_path = os.path.join(root, file)
                 img = Image.open(img_path)
 
-                # Get the original dimensions
+                # Assuming copyright banner is at the bottom, you can crop it out
                 original_width, original_height = img.size
 
                 # Calculate scaling factor for resizing
@@ -31,15 +38,21 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
                 new_height = int(original_height * scale_factor)
                 resized_img = img.resize((new_width, new_height), Image.LANCZOS)
 
+                # Calculate the cropping box to remove the copyright banner
+                crop_box = (0, 0, new_width, int(new_height * 0.98))  # NECESSARY TO CROP OUT THE BANNER
+
+                # Crop the image to remove the copyright banner
+                cropped_img = resized_img.crop(crop_box)
+
                 # Create a new blank image with the target dimensions
-                padded_img = Image.new("RGB", (target_width, target_height), color="white")
+                padded_img = Image.new("RGB", (target_width, target_height), color="black")
 
-                # Calculate the position to paste the resized image to center it with padding
+                # Calculate the position to paste the cropped image to center it with padding
                 paste_x = (target_width - new_width) // 2
-                paste_y = (target_height - new_height) // 2
+                paste_y = (target_height - cropped_img.size[1]) // 2
 
-                # Paste the resized image onto the blank image with padding
-                padded_img.paste(resized_img, (paste_x, paste_y))
+                # Paste the cropped image onto the blank image with padding
+                padded_img.paste(cropped_img, (paste_x, paste_y))
 
                 output_file = os.path.splitext(file)[0] + '_padded.jpg'
                 output_path = os.path.join(output_dir, output_file)
@@ -47,12 +60,6 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
                 padded_img.save(output_path)
 
 def images_sizes(dataset_dir: str):
-    '''
-    Function to calculate the average height and width of images in a dataset. 
-    It returns the average height and width of the images.
-    
-    dataset_dir = Input the directory where the images are stored
-    '''
     total_height = 0
     total_width = 0
     num_images = 0
@@ -61,12 +68,22 @@ def images_sizes(dataset_dir: str):
         for file in files:
             if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
                 img_path = os.path.join(root, file)
-                img = Image.open(img_path)
-                width, height = img.size
+                try:
+                    img = Image.open(img_path)
+                    width, height = img.size
 
-                total_height += height
-                total_width += width
-                num_images += 1
+                    total_height += height
+                    total_width += width
+                    num_images += 1
+                except Exception as e:
+                    print(f"Error processing image '{img_path}': {e}")
+
+    if num_images == 0:
+        print("No image files found in the directory.")
+        return 0, 0
+
+    print(f'Total Height: {total_height}')
+    print(f'Total Width: {total_width}')
 
     average_height = total_height / num_images
     average_width = total_width / num_images
