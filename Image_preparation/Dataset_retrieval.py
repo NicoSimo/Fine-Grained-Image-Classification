@@ -19,6 +19,7 @@ with open(config_path) as f:
 dataset_dir = config['dataset_dir_flowers102']
 output_dir = config['output_dir_flowers102']
 
+# FGVC Aircraft dataset needs at least RATIO = 0.98 in the resize_with_padding function to crop out the desctiption text from the images
 #dataset_dir = config['dataset_dir_fgvc-aircraft']
 #output_dir = config['output_dir_fgvc-aircraft']
 

@@ -2,7 +2,7 @@ import os
 from PIL import Image
 from collections import Counter
 
-def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_height) -> None:
+def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_height, CROP_RATIO = 1) -> None:
     '''
     Function to resize all images in the dataset_dir while preserving aspect ratio and adding padding to fit the target dimensions.
     
@@ -10,6 +10,7 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
     output_dir = Input the directory where the cropped images will be stored
     target width = Input the target width of the image
     target height = Input the target height of the image
+    CROP_RATIO = Input the ratio of the image to be cropped out from the bottom
     '''
     os.makedirs(output_dir, exist_ok=True)
     for root, _, files in os.walk(dataset_dir):
@@ -33,7 +34,7 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
                 resized_img = img.resize((new_width, new_height), Image.LANCZOS)
 
                 # Calculate the cropping box to remove the copyright banner
-                crop_box = (0, 0, new_width, int(new_height * 0.98))  # NECESSARY TO CROP OUT THE BANNER
+                crop_box = (0, 0, new_width, int(new_height * CROP_RATIO))  # NECESSARY TO CROP OUT THE BANNER
 
                 # Crop the image to remove the copyright banner
                 cropped_img = resized_img.crop(crop_box)
