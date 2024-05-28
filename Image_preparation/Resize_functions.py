@@ -48,8 +48,7 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
                 # Paste the cropped image onto the blank image with padding
                 padded_img.paste(cropped_img, (paste_x, paste_y))
 
-                output_file = os.path.splitext(file)[0] + '_padded.jpg'
-                output_path = os.path.join(output_dir, output_file)
+                output_path = os.path.join(output_dir, file)
 
                 padded_img.save(output_path)
 

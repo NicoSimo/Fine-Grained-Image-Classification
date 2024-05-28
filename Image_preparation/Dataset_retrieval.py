@@ -19,6 +19,9 @@ with open(config_path) as f:
 dataset_dir = config['dataset_dir_flowers102']
 output_dir = config['output_dir_flowers102']
 
+#dataset_dir = config['dataset_dir_fgvc-aircraft']
+#output_dir = config['output_dir_fgvc-aircraft']
+
 '''
 # This one is to resize the images in the dataset based on the AVERAGE size of the images in the dataset.
 avg_height, avg_width = Resize_functions.mean_images_sizes(dataset_dir)
