@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def plot_image_size_distribution(dataset_dir: str):
     '''
-    Function that plots the MODE of the distribution of image sizes (heights and widths) in the dataset.
+    Function that plots the distribution of image sizes (heights and widths) in the dataset.
     '''
     heights = []
     widths = []

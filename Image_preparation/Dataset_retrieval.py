@@ -30,6 +30,7 @@ output_label_path = config['output_labels_flowers102']
 input_setid_dir = config['dataset_setid_flowers102']
 output_setid_dir = config['output_setid_flowers102']
 
+# Path to the statistics file (mean and std)
 statistics_file = config['statistics_flowers102']
 
 # Convert the .mat files to .csv files
@@ -56,9 +57,11 @@ Resize_functions.resize_with_padding(dataset_dir, output_dir, int(avg_width), in
 # This one is to resize the images in the dataset based on the MODE size of the images in the dataset.
 
 mode_height, mode_width = Resize_functions.mode_images_size(dataset_dir)
+
 # Resizing the images in the dataset based on the MODE size of the images in the dataset.
 Resize_functions.resize_with_padding(dataset_dir, output_dir, mode_width, mode_height)
 
+# Compute the mean and std of the dataset to use for normalization
 Resize_functions.compute_mean_std(output_dir, statistics_file)
 
 #Dist = Distribution.plot_image_size_distribution(dataset_dir)
