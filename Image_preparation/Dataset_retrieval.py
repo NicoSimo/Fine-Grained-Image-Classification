@@ -19,6 +19,7 @@ with open(config_path) as f:
 
 ################################################ Flowers dataset ################################################
 
+'''
 dataset_dir = config['dataset_dir_flowers102']
 output_dir = config['output_dir_flowers102']
 
@@ -36,12 +37,16 @@ statistics_file = config['statistics_flowers102']
 # Convert the .mat files to .csv files
 Mat_to_csv.convert(input_label_path, output_label_path)
 Mat_to_csv.convert(input_setid_dir, output_setid_dir)
+'''
 
 ################################################ FGVC Aircraft dataset ################################################
 # FGVC Aircraft dataset needs at least RATIO = 0.98 in the resize_with_padding function to crop out the desctiption text from the images
 
-#dataset_dir = config['dataset_dir_fgvc-aircraft']
-#output_dir = config['output_dir_fgvc-aircraft']
+dataset_dir = config['dataset_dir_fgvc-aircraft']
+output_dir = config['output_dir_fgvc-aircraft']
+
+# Path to the statistics file (mean and std)
+statistics_file = config['statistics_aircraft']
 
 '''
 ################################################ Transform dataset with the average ################################################
