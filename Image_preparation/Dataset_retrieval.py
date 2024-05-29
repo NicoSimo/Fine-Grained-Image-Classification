@@ -30,6 +30,8 @@ output_label_path = config['output_labels_flowers102']
 input_setid_dir = config['dataset_setid_flowers102']
 output_setid_dir = config['output_setid_flowers102']
 
+statistics_file = config['statistics_flowers102']
+
 # Convert the .mat files to .csv files
 Mat_to_csv.convert(input_label_path, output_label_path)
 Mat_to_csv.convert(input_setid_dir, output_setid_dir)
@@ -44,7 +46,7 @@ Mat_to_csv.convert(input_setid_dir, output_setid_dir)
 ################################################ Transform dataset with the average ################################################
 # This one is to resize the images in the dataset based on the AVERAGE size of the images in the dataset.
 
-avg_height, avg_width = Resize_functions.mean_images_sizes(dataset_dir)
+avg_height, avg_width = Resize_functions.mean_images_size(dataset_dir)
 
 # Resizing the images in the dataset based on the AVERAGE size of the images in the dataset.
 Resize_functions.resize_with_padding(dataset_dir, output_dir, int(avg_width), int(avg_height))
@@ -53,9 +55,10 @@ Resize_functions.resize_with_padding(dataset_dir, output_dir, int(avg_width), in
 ################################################ Transform dataset with the Mode ################################################
 # This one is to resize the images in the dataset based on the MODE size of the images in the dataset.
 
-mode_height, mode_width = Resize_functions.mode_images_mode_sizes(dataset_dir)
-
+mode_height, mode_width = Resize_functions.mode_images_size(dataset_dir)
 # Resizing the images in the dataset based on the MODE size of the images in the dataset.
 Resize_functions.resize_with_padding(dataset_dir, output_dir, mode_width, mode_height)
+
+Resize_functions.compute_mean_std(output_dir, statistics_file)
 
 #Dist = Distribution.plot_image_size_distribution(dataset_dir)

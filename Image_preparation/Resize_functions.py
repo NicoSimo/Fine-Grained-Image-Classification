@@ -1,6 +1,8 @@
 import os
 from PIL import Image
 from collections import Counter
+import numpy as np
+import json
 
 def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_height, CROP_RATIO = 1) -> None:
     '''
@@ -53,12 +55,53 @@ def resize_with_padding(dataset_dir: str, output_dir: str, target_width, target_
 
                 padded_img.save(output_path)
 
-def mean_images_sizes(dataset_dir: str):
+def mean_images_size(dataset_dir: str) -> None:
     '''
-    Function that takes the dataset directory as input and returns the average height and width of the images in the dataset.
+    Function that takes the dataset directory as input and calculates the average height and width.
     '''
     total_height = 0
     total_width = 0
+    num_images = 0
+
+    pixel_sum = np.zeros(3)
+    pixel_squared_sum = np.zeros(3)
+    total_pixels = 0
+
+    for root, _, files in os.walk(dataset_dir):
+        for file in files:
+            if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
+                img_path = os.path.join(root, file)
+                try:
+                    img = Image.open(img_path).convert('RGB')
+                    width, height = img.size
+                    np_img = np.array(img) / 255.0  # Normalize pixel values to [0, 1]
+
+                    total_height += height
+                    total_width += width
+                    num_images += 1
+
+                    pixel_sum += np_img.sum(axis=(0, 1))
+                    pixel_squared_sum += (np_img ** 2).sum(axis=(0, 1))
+                    total_pixels += height * width
+                except Exception as e:
+                    print(f"Error processing image '{img_path}': {e}")
+
+    if num_images == 0:
+        print("No image files found in the directory.")
+        return
+
+    average_height = total_height / num_images
+    average_width = total_width / num_images
+
+    return average_height, average_width
+
+def mode_images_size(dataset_dir: str):
+
+    '''
+    Function that takes the dataset directory as input and returns the average height, width, mode height, mode width.
+    '''
+    heights = []
+    widths = []
     num_images = 0
 
     for root, _, files in os.walk(dataset_dir):
@@ -66,12 +109,12 @@ def mean_images_sizes(dataset_dir: str):
             if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
                 img_path = os.path.join(root, file)
                 try:
-                    img = Image.open(img_path)
+                    img = Image.open(img_path).convert('RGB')
                     width, height = img.size
-
-                    total_height += height
-                    total_width += width
+                    heights.append(height)
+                    widths.append(width)
                     num_images += 1
+
                 except Exception as e:
                     print(f"Error processing image '{img_path}': {e}")
 
@@ -79,40 +122,57 @@ def mean_images_sizes(dataset_dir: str):
         print("No image files found in the directory.")
         return 0, 0
 
-    average_height = total_height / num_images
-    average_width = total_width / num_images
+    mode_height = Counter(heights).most_common(1)[0][0]
+    mode_width = Counter(widths).most_common(1)[0][0]
 
-    #print(f'Average Height: {average_height} -------- Average Width: {average_width}')
+    return mode_height, mode_width
 
-    return average_height, average_width
 
-def mode_images_mode_sizes(dataset_dir: str):
-    '''
-    Function that takes the dataset directory as input and returns the mode height and width of the images in the dataset.
-    '''
+def compute_mean_std(dataset_dir, stats_file):
     heights = []
     widths = []
+    total_height = 0
+    total_width = 0
+    num_images = 0
+
+    pixel_sum = np.zeros(3)
+    pixel_squared_sum = np.zeros(3)
+    total_pixels = 0
 
     for root, _, files in os.walk(dataset_dir):
         for file in files:
             if file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg'):
                 img_path = os.path.join(root, file)
                 try:
-                    img = Image.open(img_path)
+                    img = Image.open(img_path).convert('RGB')
                     width, height = img.size
+                    np_img = np.array(img) / 255.0  # Normalize pixel values to [0, 1]
+
                     heights.append(height)
                     widths.append(width)
+
+                    total_height += height
+                    total_width += width
+                    num_images += 1
+
+                    pixel_sum += np_img.sum(axis=(0, 1))
+                    pixel_squared_sum += (np_img ** 2).sum(axis=(0, 1))
+                    total_pixels += height * width
+
                 except Exception as e:
                     print(f"Error processing image '{img_path}': {e}")
 
-    if not heights or not widths:
+    if num_images == 0:
         print("No image files found in the directory.")
-        return 0, 0
+        return
 
-    mode_height = Counter(heights).most_common(1)[0][0]
-    mode_width = Counter(widths).most_common(1)[0][0]
+    mean = pixel_sum / total_pixels
+    std = np.sqrt(pixel_squared_sum / total_pixels - mean ** 2)
 
-    #print(f'Mode Height: {mode_height} -------- Mode Width: {mode_width}')
-    #print(Counter(widths))
+    statistics = {
+        "mean": mean.tolist(),  
+        "std": std.tolist()
+    }
 
-    return mode_height, mode_width
+    with open(stats_file, 'w') as json_file:
+        json.dump(statistics, json_file)
